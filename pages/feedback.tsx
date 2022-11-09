@@ -1,16 +1,17 @@
-import Head from 'next/head';
-import Link from 'next/link';
-import { feedback } from 'data/feedback';
+import Head from "next/head";
+import { prisma } from "lib/prisma";
+import { Feedback, FeedbackType } from ".prisma/client";
+import Link from "next/link";
 
-export default function FeedbackPage() {
-  const formatFeedbackType = (feedback) => {
+export default function FeedbackPage({ feedback }) {
+  const formatFeedbackType = (feedback: FeedbackType) => {
     switch (feedback) {
-      case 'FEEDBACK':
-        return 'bg-green-500 text-green-800';
-      case 'IDEA':
-        return 'bg-yellow-300 text-yellow-800';
-      case 'ISSUE':
-        return 'bg-red-400 text-red-800';
+      case "FEEDBACK":
+        return "bg-green-500 text-green-800";
+      case "IDEA":
+        return "bg-yellow-300 text-yellow-800";
+      case "ISSUE":
+        return "bg-red-400 text-red-800";
     }
   };
   return (
@@ -59,7 +60,7 @@ export default function FeedbackPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-gray-700 divide-y divide-gray-500">
-                      {feedback.map((item) => (
+                      {feedback.map((item: Feedback) => (
                         <tr key={item.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                             {item.name}
@@ -94,3 +95,22 @@ export default function FeedbackPage() {
     </div>
   );
 }
+
+export const getServerSideProps = async () => {
+  const feedback = await prisma.feedback.findMany({
+    select: {
+      message: true,
+      id: true,
+      feedbackType: true,
+      name: true,
+      email: true,
+    },
+  });
+
+  console.log(feedback);
+  return {
+    props: {
+      feedback,
+    },
+  };
+};
